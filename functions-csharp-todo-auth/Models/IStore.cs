@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Todo.Models
 {
-    interface IStore
+    public interface IStore
     {
         Task<IList<ToDoItem>> GetItemsAsync(string userId);
         System.Threading.Tasks.Task PutItemAsync(ToDoItem item, string userId);

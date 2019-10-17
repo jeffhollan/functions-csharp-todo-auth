@@ -16,7 +16,7 @@ namespace Todo
         private readonly IStore _store;
         public ToDo(IStore store)
         {
-
+            _store = store;
         }
 
         [FunctionName("GetTodos")]
@@ -26,7 +26,7 @@ namespace Todo
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            return new OkObjectResult(_store.GetItems(req.HttpContext.User.Identity.Name);
+            return new OkObjectResult(await _store.GetItemsAsync(req.HttpContext.User.Identity.Name));
         }
     }
 }
