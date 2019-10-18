@@ -48,5 +48,43 @@ namespace Todo
 
             return new OkResult();
         }
+
+        [FunctionName("DeleteTodo")]
+        public async Task<IActionResult> DeleteTodo(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "todo")] HttpRequest req,
+            ILogger log)
+        {
+            var userId = req.HttpContext.User.Identity.Name ?? "test";
+            log.LogInformation($"DELETE Todos triggered for {userId}.");
+
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var todo = JsonConvert.DeserializeObject<ToDoItem>(requestBody);
+            todo.UserId = userId;
+
+            log.LogInformation($"Have todo item: {JsonConvert.SerializeObject(todo)}");
+
+            await _store.DeleteItemAsync(todo);
+
+            return new OkResult();
+        }
+
+        [FunctionName("UpdateTodo")]
+        public async Task<IActionResult> PostTodo(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "todo")] HttpRequest req,
+            ILogger log)
+        {
+            var userId = req.HttpContext.User.Identity.Name ?? "test";
+            log.LogInformation($"POST Todos triggered for {userId}.");
+
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var todo = JsonConvert.DeserializeObject<ToDoItem>(requestBody);
+            todo.UserId = userId;
+
+            log.LogInformation($"Have todo item: {JsonConvert.SerializeObject(todo)}");
+
+            await _store.UpdateItemAsync(todo);
+
+            return new OkResult();
+        }
     }
 }

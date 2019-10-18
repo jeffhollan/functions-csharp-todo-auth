@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "blazor-todo"
+		},
+		{
+			"path": "functions-csharp-todo-auth"
+		}
+	],
+	"settings": {}
+}

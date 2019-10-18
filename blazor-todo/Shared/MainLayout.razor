@@ -8,23 +8,30 @@
 
 <div class="main">
     <div class="top-row px-4">
-        <a href="https://jehollan-todo.azurewebsites.net/.auth/login/aad">@auth</a>
+        
     </div>
 
     <div class="content px-4">
-        @Body
+        @if( auth == null )
+        {
+            <a href="https://jehollan-todo.azurewebsites.net/.auth/login/aad">Please Log In to a Microsoft Account</a>
+        }
+        else
+        {
+            @Body
+        }
     </div>
 </div>
 
 @code {
-    private string auth = "Login";
+    private string auth;
 
     protected override async Task OnInitializedAsync()
     {
         var result = await Http.GetAsync("https://jehollan-todo.azurewebsites.net/.auth/me");
         if(result.IsSuccessStatusCode)
         {
-            auth = "You are logged in";
+            auth = "LoggedIn";
         }
     }
 }

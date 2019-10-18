@@ -14,6 +14,12 @@ namespace Todo.Models
         {
             _cosmosContainer = cosmosContainer;
         }
+
+        public async Task DeleteItemAsync(ToDoItem item)
+        {
+            await _cosmosContainer.DeleteItemAsync<ToDoItem>(item.Id.ToString(), new PartitionKey(item.UserId));
+        }
+
         public async Task<IList<ToDoItem>> GetItemsAsync(string userId)
         {
             var sqlQueryText = $"SELECT * FROM c WHERE c.UserId = '{userId}'";
@@ -36,7 +42,12 @@ namespace Todo.Models
 
         public async Task PutItemAsync(ToDoItem item)
         {
-            await _cosmosContainer.CreateItemAsync(item, new PartitionKey(item.UserId));
+            await _cosmosContainer.CreateItemAsync<ToDoItem>(item, new PartitionKey(item.UserId));
+        }
+
+        public async Task UpdateItemAsync(ToDoItem item)
+        {
+            await _cosmosContainer.UpsertItemAsync<ToDoItem>(item, new PartitionKey(item.UserId));
         }
     }
 }

@@ -10,5 +10,7 @@ namespace Todo.Models
     {
         Task<IList<ToDoItem>> GetItemsAsync(string userId);
         System.Threading.Tasks.Task PutItemAsync(ToDoItem item);
+        System.Threading.Tasks.Task DeleteItemAsync(ToDoItem item);
+        System.Threading.Tasks.Task UpdateItemAsync(ToDoItem item);
     }
 }

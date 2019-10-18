@@ -5,7 +5,7 @@
 
 @if (list == null)
 {
-    <p><em>Not logged in or empty list</em></p>
+    <p><em>Retreiving list....</em></p>
 }
 else
 {
@@ -21,7 +21,8 @@ else
             {
                 <tr>
                     <td>@item.Title</td>
-                    <td>@item.Completed</td>
+                    <td><form><input type="checkbox" @bind="item.Completed" /></form></td>
+                    <td><button class="btn btn-dark btn-small" @onclick="@(e => DeleteItemAsync(item))">Delete</button></td>
                 </tr>
             }
         </tbody>
@@ -36,21 +37,34 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        list = await Http.GetJsonAsync<ToDoItem[]>("https://jehollan-todo.azurewebsites.net/api/todo");
+       await RefreshListAsync();
     }
 
     private async Task AddToDo()
     {
-       await Http.SendJsonAsync(HttpMethod.Put, "https://jehollan-todo.azurewebsites.net/api/todo", new ToDoItem
+        await Http.SendJsonAsync(HttpMethod.Put, "https://jehollan-todo.azurewebsites.net/api/todo", new ToDoItem
             {
+                Id = Guid.NewGuid(),
                 Title = "Test",
                 Completed = false
             });
+        await RefreshListAsync();
+    }
+
+    private async Task DeleteItemAsync(ToDoItem item)
+    {
+        await Http.SendJsonAsync(HttpMethod.Delete, "https://jehollan-todo.azurewebsites.net/api/todo", item);
+        await RefreshListAsync();
+    }
+
+    private async Task RefreshListAsync()
+    {
         list = await Http.GetJsonAsync<ToDoItem[]>("https://jehollan-todo.azurewebsites.net/api/todo");
     }
 
     public class ToDoItem
     {
+        public Guid Id { get; set; }
         public string Title { get; set; }
 
         public bool Completed { get; set; }
