@@ -1,0 +1,58 @@
+﻿@page "/"
+@inject HttpClient Http
+
+<h1>To Do List:</h1>
+
+@if (list == null)
+{
+    <p><em>Not logged in or empty list</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Completed</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in list)
+            {
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.Completed</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<br/>
+<button class="btn btn-primary" @onclick="AddToDo">Click me</button>
+
+@code {
+    private ToDoItem[] list;
+
+    protected override async Task OnInitializedAsync()
+    {
+        list = await Http.GetJsonAsync<ToDoItem[]>("https://jehollan-todo.azurewebsites.net/api/todo");
+    }
+
+    private async Task AddToDo()
+    {
+       await Http.SendJsonAsync(HttpMethod.Put, "https://jehollan-todo.azurewebsites.net/api/todo", new ToDoItem
+            {
+                Title = "Test",
+                Completed = false
+            });
+        list = await Http.GetJsonAsync<ToDoItem[]>("https://jehollan-todo.azurewebsites.net/api/todo");
+    }
+
+    public class ToDoItem
+    {
+        public string Title { get; set; }
+
+        public bool Completed { get; set; }
+    }
+}

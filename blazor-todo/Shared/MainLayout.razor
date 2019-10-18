@@ -1,0 +1,30 @@
+﻿@inherits LayoutComponentBase
+@using System.Net.Http
+@inject HttpClient Http
+
+<div class="sidebar">
+    <NavMenu />
+</div>
+
+<div class="main">
+    <div class="top-row px-4">
+        <a href="https://jehollan-todo.azurewebsites.net/.auth/login/aad">@auth</a>
+    </div>
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>
+
+@code {
+    private string auth = "Login";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await Http.GetAsync("https://jehollan-todo.azurewebsites.net/.auth/me");
+        if(result.IsSuccessStatusCode)
+        {
+            auth = "You are logged in";
+        }
+    }
+}
