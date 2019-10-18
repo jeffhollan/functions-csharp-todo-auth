@@ -21,7 +21,7 @@ namespace Todo
 
         [FunctionName("GetTodos")]
         public async Task<IActionResult> GetTodos(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "todo")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "todo")] HttpRequest req,
             ILogger log)
         {
             var userId = req.HttpContext.User.Identity.Name ?? "test";
@@ -32,7 +32,7 @@ namespace Todo
 
         [FunctionName("PutTodo")]
         public async Task<IActionResult> PutTodo(
-            [HttpTrigger(AuthorizationLevel.Function, "put", Route = "todo")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "todo")] HttpRequest req,
             ILogger log)
         {
             var userId = req.HttpContext.User.Identity.Name ?? "test";
