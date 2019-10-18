@@ -9,6 +9,6 @@ namespace Todo.Models
     public interface IStore
     {
         Task<IList<ToDoItem>> GetItemsAsync(string userId);
-        System.Threading.Tasks.Task PutItemAsync(ToDoItem item, string userId);
+        System.Threading.Tasks.Task PutItemAsync(ToDoItem item);
     }
 }

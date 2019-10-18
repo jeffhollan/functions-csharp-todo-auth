@@ -1,0 +1,10 @@
+### Get Todo
+GET http://localhost:7071/api/todo
+
+### Put Todo
+PUT http://localhost:7071/api/todo
+Content-Type: application/json
+
+{
+    "Title": "Get milk"
+}

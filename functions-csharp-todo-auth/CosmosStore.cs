@@ -16,7 +16,7 @@ namespace Todo.Models
         }
         public async Task<IList<ToDoItem>> GetItemsAsync(string userId)
         {
-            var sqlQueryText = $"SELECT * FROM c WHERE c.LastName = '{userId}'";
+            var sqlQueryText = $"SELECT * FROM c WHERE c.UserId = '{userId}'";
             QueryDefinition qd = new QueryDefinition(sqlQueryText);
             var iterator = _cosmosContainer.GetItemQueryIterator<ToDoItem>(qd);
 
@@ -34,9 +34,9 @@ namespace Todo.Models
             return items;
         }
 
-        public async Task PutItemAsync(ToDoItem item, string userId)
+        public async Task PutItemAsync(ToDoItem item)
         {
-            await _cosmosContainer.CreateItemAsync(item, new PartitionKey(userId));
+            await _cosmosContainer.CreateItemAsync(item, new PartitionKey(item.UserId));
         }
     }
 }
