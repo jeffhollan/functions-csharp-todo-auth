@@ -21,7 +21,7 @@ else
             {
                 <tr>
                     <td>@item.Title</td>
-                    <td><form><input type="checkbox" @onchange="@(e => ToggleCompletedAsync(item))" @(item.Completed == true : "checked" : "")/></form></td>
+                    <td><form><input type="checkbox" @onchange="@(e => ToggleCompletedAsync(item))" checked="@(item.Completed)" /></form></td>
                     <td><button class="btn btn-dark btn-small" @onclick="@(e => DeleteItemAsync(item))">Delete</button></td>
                 </tr>
             }
