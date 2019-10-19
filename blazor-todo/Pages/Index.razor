@@ -21,7 +21,7 @@ else
             {
                 <tr>
                     <td>@item.Title</td>
-                    <td><form><input type="checkbox" @bind="item.Completed" /></form></td>
+                    <td><form><input type="checkbox" @onchange="@(e => ToggleCompletedAsync(item))" @(item.Completed == true : "checked" : "")/></form></td>
                     <td><button class="btn btn-dark btn-small" @onclick="@(e => DeleteItemAsync(item))">Delete</button></td>
                 </tr>
             }
@@ -30,7 +30,7 @@ else
 }
 
 <br/>
-<button class="btn btn-primary" @onclick="AddToDo">Click me</button>
+<button class="btn btn-primary" @onclick="AddToDo">Add Item</button>
 
 @code {
     private ToDoItem[] list;
@@ -57,6 +57,13 @@ else
         await RefreshListAsync();
     }
 
+    private async Task ToggleCompletedAsync(ToDoItem item)
+    {
+        item.Completed = !item.Completed;
+        await Http.SendJsonAsync(HttpMethod.Post, "https://jehollan-todo.azurewebsites.net/api/todo", item);
+        await RefreshListAsync();
+    }
+
     private async Task RefreshListAsync()
     {
         list = await Http.GetJsonAsync<ToDoItem[]>("https://jehollan-todo.azurewebsites.net/api/todo");
@@ -66,7 +73,6 @@ else
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
-
         public bool Completed { get; set; }
     }
 }
