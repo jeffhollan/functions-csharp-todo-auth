@@ -158,7 +158,8 @@
                             "https://jeff-ignite.azurefd.net/"
                         ],
                         "defaultProvider": "AzureActiveDirectory",
-                        "unauthenticatedClientAction": "RedirectToLoginPage"
+                        "unauthenticatedClientAction": "RedirectToLoginPage",
+                        "tokenStoreEnabled": true
                     }
                 },
                 {
