@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject HttpClient Http
+@inject FunctionAppState Function
 
 <h1>To Do List:</h1>
 
@@ -30,6 +31,7 @@ else
 }
 
 <br/>
+
 <form @onsubmit="AddToDo" class="form-inline">
     <div class="form-group mr-2">
         <input type="text" class="form-control" @bind="NewItemText" />
@@ -51,31 +53,32 @@ else
 
     private async Task AddToDo()
     {
-        await Http.SendJsonAsync(HttpMethod.Put, "https://jehollan-todo.azurewebsites.net/api/todo", new ToDoItem
+        await Http.SendJsonAsync(HttpMethod.Put, $"https://{Function.FunctionAppName}.azurewebsites.net/api/todo", new ToDoItem
             {
                 Id = Guid.NewGuid(),
                 Title = NewItemText,
                 Completed = false
             });
         await RefreshListAsync();
+        NewItemText = "";
     }
 
     private async Task DeleteItemAsync(ToDoItem item)
     {
-        await Http.SendJsonAsync(HttpMethod.Delete, "https://jehollan-todo.azurewebsites.net/api/todo", item);
+        await Http.SendJsonAsync(HttpMethod.Delete, $"https://{Function.FunctionAppName}.azurewebsites.net/api/todo", item);
         await RefreshListAsync();
     }
 
     private async Task ToggleCompletedAsync(ToDoItem item)
     {
         item.Completed = !item.Completed;
-        await Http.SendJsonAsync(HttpMethod.Post, "https://jehollan-todo.azurewebsites.net/api/todo", item);
+        await Http.SendJsonAsync(HttpMethod.Post, $"https://{Function.FunctionAppName}.azurewebsites.net/api/todo", item);
         await RefreshListAsync();
     }
 
     private async Task RefreshListAsync()
     {
-        list = await Http.GetJsonAsync<ToDoItem[]>("https://jehollan-todo.azurewebsites.net/api/todo");
+        list = await Http.GetJsonAsync<ToDoItem[]>($"https://{Function.FunctionAppName}.azurewebsites.net/api/todo");
     }
 
     public class ToDoItem

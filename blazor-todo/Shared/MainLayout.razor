@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @using System.Net.Http
 @inject HttpClient Http
+@inject FunctionAppState Function
 
 <div class="sidebar">
     <NavMenu />
@@ -12,26 +13,53 @@
     </div>
 
     <div class="content px-4">
-        @if( auth == null )
+        @if( Function.FunctionAppName == null )
         {
-            <a href="https://jehollan-todo.azurewebsites.net/.auth/login/aad">Please Log In to a Microsoft Account</a>
+            <form>
+                <div class="input-group mb-3">
+                    <input @bind="Function.FunctionAppName" type="text" class="form-control" placeholder="Function App" aria-label="Function App" aria-describedby="basic-addon2" />
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="basic-addon2">.azurewebsites.net</span>
+                    </div>
+                </div>
+                <div class="input-group mb-sm-2">
+                    <button class="btn btn-primary mb-2">Connect</button>
+                </div>
+            </form>
+        }
+        else if( Function.Authenticated == null )
+        {
+            <p>@Function.Authenticated</p>
+            <a href="@($"https://{Function.FunctionAppName}.azurewebsites.net/.auth/login/aad")">Please Log In to a Microsoft Account</a>
         }
         else
         {
-            @Body
+        @Body
         }
+        
     </div>
 </div>
 
 @code {
-    private string auth;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var result = await Http.GetAsync("https://jehollan-todo.azurewebsites.net/.auth/me");
+        if(Function.FunctionAppName != null && Function.Authenticated == null)
+        {
+            await Authenticate();
+        }
+    }
+
+    private async Task Authenticate()
+    {
+        string url = $"https://{Function.FunctionAppName}.azurewebsites.net/.auth/me";
+        var result = await Http.GetAsync(url);
         if(result.IsSuccessStatusCode)
         {
-            auth = "LoggedIn";
+            Function.Authenticated = "true";
+            this.StateHasChanged();
+
         }
+        Function.Authenticated = "false";
     }
 }

@@ -9,6 +9,7 @@ namespace blazor_todo
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<FunctionAppState>();
         }
 
         public void Configure(IComponentsApplicationBuilder app)
@@ -21,5 +22,11 @@ namespace blazor_todo
             }
             app.AddComponent<App>("app");
         }
+    }
+
+    public class FunctionAppState 
+    {
+        public string FunctionAppName { get; set; }
+        public string Authenticated { get; set; }
     }
 }
