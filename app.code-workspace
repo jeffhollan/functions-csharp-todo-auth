@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "functions-csharp-todo-auth"
+		},
+		{
+			"path": "resources"
 		}
 	],
 	"settings": {}

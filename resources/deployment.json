@@ -1,0 +1,202 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {
+        "functionAppName": "[concat(uniquestring(resourceGroup().id), '-func')]",
+        "hostingPlanName": "[concat(uniquestring(resourceGroup().id), '-plan')]",
+        "applicationInsightsName": "[variables('functionAppName')]",
+        "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'func')]",
+        "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "functionWorkerRuntime": "dotnet",
+        "accountName": "[concat(uniquestring(resourceGroup().id))]",
+        "databaseName": "todoDb",
+        "containerName": "todoCollection"
+    },
+    "resources": [
+        {
+			"type": "Microsoft.DocumentDB/databaseAccounts",
+			"name": "[variables('accountName')]",
+			"apiVersion": "2016-03-31",
+			"location": "EastUs",
+            "kind": "GlobalDocumentDB",
+            "properties": {
+                "locations": [
+                  {
+                    "locationName": "EastUs"
+                  }
+                ],
+                "databaseAccountOfferType": "Standard"
+              }
+		},
+		{
+			"type": "Microsoft.DocumentDB/databaseAccounts/apis/databases",
+			"name": "[concat(variables('accountName'), '/sql/', variables('databaseName'))]",
+			"apiVersion": "2016-03-31",
+			"dependsOn": [ "[resourceId('Microsoft.DocumentDB/databaseAccounts/', variables('accountName'))]" ],
+			"properties":{
+				"resource":{
+					"id": "[variables('databaseName')]"
+				},
+				"options": { "throughput": "1000" }
+			}
+		},
+		{
+			"type": "Microsoft.DocumentDb/databaseAccounts/apis/databases/containers",
+			"name": "[concat(variables('accountName'), '/sql/', variables('databaseName'), '/', variables('containerName'))]",
+			"apiVersion": "2016-03-31",
+			"dependsOn": [ "[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', variables('accountName'), 'sql', variables('databaseName'))]" ],
+			"properties":
+			{
+				"resource":{
+					"id":  "[variables('containerName')]",
+					"partitionKey": {
+						"paths": [
+						"/UserId"
+						],
+						"kind": "Hash"
+					}
+				}
+			}
+		},
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2016-12-01",
+            "location": "EastUs",
+            "kind": "Storage",
+            "sku": {
+                "name": "Standard_LRS"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[variables('hostingPlanName')]",
+            "location": "EastUs",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic"
+            },
+            "properties": {
+                "name": "[variables('hostingPlanName')]",
+                "computeMode": "Dynamic"
+            }
+        },
+        {
+            "apiVersion": "2015-08-01",
+            "type": "Microsoft.Web/sites",
+            "name": "[variables('functionAppName')]",
+            "location": "EastUs",
+            "kind": "functionapp",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(variables('functionAppName'))]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~2"
+                        },
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "8.11.1"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('microsoft.insights/components/', variables('applicationInsightsName')), '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "[variables('functionWorkerRuntime')]"
+                        },
+                        {
+                            "name": "CosmosConnectionString",
+                            "value": "[concat('AccountEndpoint=https://', variables('accountName'), '.documents.azure.com:443/;AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('accountName')), '2015-04-08').primaryMasterKey, ';')]"
+                        },
+                        {
+                            "name": "CosmosDatabase",
+                            "value": "[variables('databaseName')]"
+                        },
+                        {
+                            "name": "CosmosContainer",
+                            "value": "[variables('containerName')]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "type": "config",
+                    "name": "authsettings",
+                    "apiVersion": "2018-02-01",
+                    "location": "East US",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
+                    ],
+                    "properties": {
+                        "enabled": true,
+                        "allowedExternalRedirectUrls": [
+                            "https://igniteblazor.z13.web.core.windows.net",
+                            "http://localhost:5000",
+                            "https://ignite.hollan.dev",
+                            "https://jeff-ignite.azurefd.net/"
+                        ],
+                        "defaultProvider": "AzureActiveDirectory",
+                        "unauthenticatedClientAction": "RedirectToLoginPage"
+                    }
+                },
+                {
+                    "type": "config",
+                    "name": "web",
+                    "apiVersion": "2018-02-01",
+                    "location": "East US",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
+                    ],
+                    "properties": {
+                        "cors": {
+                            "allowedOrigins": [
+                              "http://localhost:5000",
+                              "https://igniteblazor.z13.web.core.windows.net",
+                              "http://igniteblazor.z13.web.core.windows.net",
+                              "https://jeff-ignite.azurefd.net",
+                              "https://ignite.hollan.dev"
+                            ],
+                            "supportCredentials": true
+                          }
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2018-05-01-preview",
+            "name": "[variables('applicationInsightsName')]",
+            "type": "microsoft.insights/components",
+            "location": "East US",
+            "tags": {
+                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('applicationInsightsName'))]": "Resource"
+            },
+            "properties": {
+                "ApplicationId": "[variables('applicationInsightsName')]",
+                "Request_Source": "IbizaWebAppExtensionCreate"
+            }
+        }
+        
+    ]
+}
