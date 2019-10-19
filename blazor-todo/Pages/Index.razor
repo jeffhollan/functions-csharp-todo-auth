@@ -30,10 +30,19 @@ else
 }
 
 <br/>
-<button class="btn btn-primary" @onclick="AddToDo">Add Item</button>
+<form @onsubmit="AddToDo" class="form-inline">
+    <div class="form-group mr-2">
+        <input type="text" class="form-control" @bind="NewItemText" />
+    </div>
+    <div class="form-group mr-sm-2">
+        <button class="btn btn-primary mb-2">Add Item</button>
+    </div>
+</form>
+
 
 @code {
     private ToDoItem[] list;
+    private string NewItemText;
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,7 +54,7 @@ else
         await Http.SendJsonAsync(HttpMethod.Put, "https://jehollan-todo.azurewebsites.net/api/todo", new ToDoItem
             {
                 Id = Guid.NewGuid(),
-                Title = "Test",
+                Title = NewItemText,
                 Completed = false
             });
         await RefreshListAsync();
